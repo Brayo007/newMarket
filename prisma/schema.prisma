@@ -1,0 +1,200 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model carts {
+  id              Int                @id @default(autoincrement()) @db.UnsignedInt
+  user_session_id String             @db.Char(32)
+  product_type    carts_product_type
+  product_id      Int                @db.UnsignedMediumInt
+  quantity        Int                @db.UnsignedTinyInt
+  date_created    DateTime           @default(now()) @db.Timestamp(0)
+  date_modified   DateTime           @default(dbgenerated("'1990-01-01 00:00:01'")) @db.Timestamp(0)
+
+  @@index([product_type, product_id], map: "product_type")
+  @@index([user_session_id], map: "user_session_id")
+}
+
+model charges {
+  id           Int      @id @default(autoincrement()) @db.UnsignedInt
+  charge_id    String   @db.VarChar(60)
+  order_id     Int      @db.UnsignedInt
+  type         String   @db.VarChar(18)
+  amount       Int      @db.UnsignedInt
+  charge       String   @db.Text
+  date_created DateTime @default(now()) @db.Timestamp(0)
+
+  @@index([charge_id], map: "charge_id")
+  @@index([order_id], map: "order_id")
+}
+
+model customers {
+  id           Int      @id @default(autoincrement()) @db.UnsignedInt
+  email        String   @db.VarChar(80)
+  first_name   String   @db.VarChar(20)
+  last_name    String   @db.VarChar(40)
+  address1     String   @db.VarChar(80)
+  address2     String?  @db.VarChar(80)
+  city         String   @db.VarChar(60)
+  state        String   @db.Char(2)
+  zip          Int      @db.MediumInt
+  phone        String   @db.Char(10)
+  date_created DateTime @default(now()) @db.Timestamp(0)
+
+  @@index([email], map: "email")
+}
+
+model general_products {
+  id          Int     @id @default(autoincrement()) @db.UnsignedTinyInt
+  category    String  @unique(map: "type") @db.VarChar(40)
+  description String? @db.TinyText
+  image       String  @db.VarChar(45)
+}
+
+model novel_products_categories {
+  id          Int    @id @default(autoincrement()) @db.UnsignedTinyInt
+  category    String @unique(map: "category") @db.VarChar(40)
+  description String @db.TinyText
+  image       String @db.VarChar(45)
+}
+
+model novel_products_products {
+  id                         Int      @id @default(autoincrement()) @db.UnsignedMediumInt
+  novel_products_category_id Int      @db.UnsignedTinyInt
+  name                       String   @db.VarChar(60)
+  description                String?  @db.TinyText
+  image                      String   @db.VarChar(45)
+  price                      Int      @db.UnsignedInt
+  stock                      Int      @default(0) @db.UnsignedMediumInt
+  date_created               DateTime @default(now()) @db.Timestamp(0)
+
+  @@index([novel_products_category_id], map: "novel_products_category_id")
+}
+
+model order_contents {
+  id           Int                          @id @default(autoincrement()) @db.UnsignedInt
+  order_id     Int                          @db.UnsignedInt
+  product_type order_contents_product_type?
+  product_id   Int                          @db.UnsignedMediumInt
+  quantity     Int                          @db.UnsignedTinyInt
+  price_per    Int                          @db.UnsignedInt
+  ship_date    DateTime?                    @db.Date
+
+  @@index([order_id], map: "order_id")
+  @@index([product_type, product_id], map: "product_type")
+  @@index([ship_date], map: "ship_date")
+}
+
+model orders {
+  id                 Int      @id @default(autoincrement()) @db.UnsignedInt
+  customer_id        Int      @db.UnsignedInt
+  total              Int?     @db.UnsignedInt
+  shipping           Int      @default(0) @db.UnsignedInt
+  credit_card_number Int      @db.MediumInt
+  order_date         DateTime @default(now()) @db.Timestamp(0)
+
+  @@index([customer_id], map: "customer_id")
+  @@index([order_date], map: "order_date")
+}
+
+model reviews {
+  id           Int                  @id @default(autoincrement()) @db.UnsignedInt
+  product_type reviews_product_type
+  product_id   Int                  @db.UnsignedMediumInt
+  name         String               @db.VarChar(60)
+  email        String               @db.VarChar(80)
+  review       String               @db.Text
+  date_created DateTime             @default(now()) @db.Timestamp(0)
+
+  @@unique([email, product_type, product_id], map: "email")
+  @@index([product_type, product_id], map: "product_type")
+}
+
+model sales {
+  id           Int                 @id @default(autoincrement()) @db.UnsignedInt
+  product_type sales_product_type?
+  product_id   Int                 @db.UnsignedMediumInt
+  price        Int                 @db.UnsignedInt
+  start_date   DateTime            @db.Date
+  end_date     DateTime?           @db.Date
+
+  @@index([product_type, product_id], map: "product_type")
+  @@index([start_date], map: "start_date")
+}
+
+model sizes {
+  id   Int    @id @default(autoincrement()) @db.UnsignedTinyInt
+  size String @unique(map: "size") @db.VarChar(40)
+}
+
+model specific_products {
+  id                 Int      @id @default(autoincrement()) @db.UnsignedMediumInt
+  general_product_id Int      @db.UnsignedTinyInt
+  size_id            Int      @db.UnsignedTinyInt
+  name               String   @db.VarChar(60)
+  description        String?  @db.TinyText
+  image              String   @db.VarChar(45)
+  price              Int      @db.UnsignedInt
+  stock              Int      @default(0) @db.UnsignedMediumInt
+  date_created       DateTime @default(now()) @db.Timestamp(0)
+
+  @@index([general_product_id], map: "general_product_id")
+  @@index([size_id], map: "size")
+}
+
+model transactions {
+  id              Int      @id @default(autoincrement()) @db.UnsignedInt
+  order_id        Int      @db.UnsignedInt
+  type            String   @db.VarChar(18)
+  amount          Int      @db.UnsignedInt
+  response_code   Int      @db.UnsignedTinyInt
+  response_reason String?  @db.TinyText
+  transaction_id  BigInt   @db.UnsignedBigInt
+  response        String   @db.Text
+  date_created    DateTime @default(now()) @db.Timestamp(0)
+
+  @@index([order_id], map: "order_id")
+}
+
+model wish_lists {
+  id              Int                      @id @default(autoincrement()) @db.UnsignedInt
+  user_session_id String                   @db.Char(32)
+  product_type    wish_lists_product_type?
+  product_id      Int                      @db.UnsignedMediumInt
+  quantity        Int                      @db.UnsignedTinyInt
+  date_created    DateTime                 @default(now()) @db.Timestamp(0)
+  date_modified   DateTime                 @default(dbgenerated("'1990-01-01 00:00:01'")) @db.Timestamp(0)
+
+  @@index([product_type, product_id], map: "product_type")
+  @@index([user_session_id], map: "user_session_id")
+}
+
+enum carts_product_type {
+  common
+  unique
+}
+
+enum order_contents_product_type {
+  common
+  unique
+}
+
+enum reviews_product_type {
+  common
+  unique
+}
+
+enum sales_product_type {
+  common
+  unique
+}
+
+enum wish_lists_product_type {
+  common
+  unique
+}
