@@ -5,8 +5,10 @@ import Link from 'next/link';
 import prisma from '../../lib/prisma';
 import axios from 'axios';
 import { Store } from '../../utils/Store';
+import { useRouter } from 'next/router';
 
 export default function ProductScreen(props) {
+  const router = useRouter();
   const { dispatch } = useContext(Store);
   const { product } = props;
   if (!product) {
@@ -24,6 +26,7 @@ export default function ProductScreen(props) {
       return;
     }
     dispatch({ type: 'CART_ADD_ITEM', payload: { ...product, quantity: 1 } });
+    router.push('/cart');
   };
 
 
@@ -36,7 +39,7 @@ export default function ProductScreen(props) {
       <div className="flex justify-center">
   <div className="flex flex-col md:flex-row md:max-w-xl rounded-lg bg-white shadow-lg">
     <Image 
-      src={product[0].f6}
+      src={product[0].f7}
       alt={product[0].f5}
       width={500}
       height={500}
@@ -44,7 +47,7 @@ export default function ProductScreen(props) {
       className="rounded-t-lg md:rounded-none md:rounded-l-lg" 
       >
     </Image>
-{console.log(product)}
+
 
     <div className="p-6 flex flex-col justify-start">
       <h5 className="text-gray-900 text-xl font-medium mb-2">{product[0].f5}</h5>

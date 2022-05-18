@@ -1,14 +1,33 @@
 import { PrismaClient } from "@prisma/client";
 import Image from 'next/image'
 import Layout from '../components/Layout';
-import data from '../utils/data';
+
+import axios from 'axios';
+import { useRouter } from 'next/router';
+import { useContext } from 'react';
+import { Store } from '../utils/Store';
+
 import Link from 'next/link';
 
 const prisma = new PrismaClient();
 
 
 export default function Home(props) {
+  const router = useRouter();
+  const { state, dispatch } = useContext(Store);
   const products = props.products;
+
+  const addToCartHandler = async (product) => {
+    const existItem = state.cart.cartItems.find((x) => x[0].f2 === product.f2);
+    const quantity = existItem ? existItem.quantity + 1 : 1;
+    const { data } = await axios.get(`/api/products/${product[0].f2}`);
+    if (data.countInStock < quantity) {
+      window.alert('Sorry. Product is out of stock');
+      return;
+    }
+    dispatch({ type: 'CART_ADD_ITEM', payload: { ...product, quantity } });
+    router.push('/cart');
+  };
 
   return (
     <Layout>
@@ -24,7 +43,7 @@ export default function Home(props) {
             <div>
               <div className="w-full min-h-80 bg-gray-200 aspect-w-1 aspect-h-1 rounded-md overflow-hidden group-hover:opacity-75 lg:h-80 lg:aspect-none">
                 <Image
-                  src={product.f6}
+                  src={product.f7}
                   alt={product.f5}
                   width={500}
                   height={500}
@@ -51,7 +70,7 @@ export default function Home(props) {
               </Link>
 
 
-              <button className='bg-grey-700'>Add to cart</button>
+              <button onClick={() => addToCartHandler(product)}>Add to cart</button>
             </div>
           ))}
         </div>

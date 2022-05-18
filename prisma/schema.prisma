@@ -20,31 +20,21 @@ model carts {
   @@index([user_session_id], map: "user_session_id")
 }
 
-model charges {
-  id           Int      @id @default(autoincrement()) @db.UnsignedInt
-  charge_id    String   @db.VarChar(60)
-  order_id     Int      @db.UnsignedInt
-  type         String   @db.VarChar(18)
-  amount       Int      @db.UnsignedInt
-  charge       String   @db.Text
-  date_created DateTime @default(now()) @db.Timestamp(0)
-
-  @@index([charge_id], map: "charge_id")
-  @@index([order_id], map: "order_id")
-}
-
 model customers {
-  id           Int      @id @default(autoincrement()) @db.UnsignedInt
-  email        String   @db.VarChar(80)
-  first_name   String   @db.VarChar(20)
-  last_name    String   @db.VarChar(40)
-  address1     String   @db.VarChar(80)
-  address2     String?  @db.VarChar(80)
-  city         String   @db.VarChar(60)
-  state        String   @db.Char(2)
-  zip          Int      @db.MediumInt
-  phone        String   @db.Char(10)
-  date_created DateTime @default(now()) @db.Timestamp(0)
+  id                 Int                  @id @default(autoincrement()) @db.UnsignedInt
+  email              String               @db.VarChar(80)
+  first_name         String               @db.VarChar(20)
+  last_name          String               @db.VarChar(40)
+  password           String               @db.VarChar(300)
+  user_type          customers_user_type
+  address1           String               @db.VarChar(80)
+  address2           String?              @db.VarChar(80)
+  city               String               @db.VarChar(60)
+  state              String               @db.Char(2)
+  phone              String               @db.Char(10)
+  date_created       DateTime             @default(now()) @db.Timestamp(0)
+  online_shops_shops online_shops_shops[]
+  specific_shops     specific_shops[]
 
   @@index([email], map: "email")
 }
@@ -64,16 +54,19 @@ model novel_products_categories {
 }
 
 model novel_products_products {
-  id                         Int      @id @default(autoincrement()) @db.UnsignedMediumInt
-  novel_products_category_id Int      @db.UnsignedTinyInt
-  name                       String   @db.VarChar(60)
-  description                String?  @db.TinyText
-  image                      String   @db.VarChar(45)
-  price                      Int      @db.UnsignedInt
-  stock                      Int      @default(0) @db.UnsignedMediumInt
-  date_created               DateTime @default(now()) @db.Timestamp(0)
+  id                         Int                @id @default(autoincrement()) @db.UnsignedMediumInt
+  novel_products_category_id Int                @db.UnsignedTinyInt
+  name                       String             @db.VarChar(60)
+  description                String?            @db.TinyText
+  image                      String             @db.VarChar(45)
+  online_shop_id             Int                @db.UnsignedMediumInt
+  price                      Int                @db.UnsignedInt
+  stock                      Int                @default(0) @db.UnsignedMediumInt
+  date_created               DateTime           @default(now()) @db.Timestamp(0)
+  online_shops_shops         online_shops_shops @relation(fields: [online_shop_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "novel_products_products_ibfk_1")
 
   @@index([novel_products_category_id], map: "novel_products_category_id")
+  @@index([online_shop_id], map: "online_shop_id")
 }
 
 model order_contents {
@@ -102,19 +95,6 @@ model orders {
   @@index([order_date], map: "order_date")
 }
 
-model reviews {
-  id           Int                  @id @default(autoincrement()) @db.UnsignedInt
-  product_type reviews_product_type
-  product_id   Int                  @db.UnsignedMediumInt
-  name         String               @db.VarChar(60)
-  email        String               @db.VarChar(80)
-  review       String               @db.Text
-  date_created DateTime             @default(now()) @db.Timestamp(0)
-
-  @@unique([email, product_type, product_id], map: "email")
-  @@index([product_type, product_id], map: "product_type")
-}
-
 model sales {
   id           Int                 @id @default(autoincrement()) @db.UnsignedInt
   product_type sales_product_type?
@@ -133,18 +113,21 @@ model sizes {
 }
 
 model specific_products {
-  id                 Int      @id @default(autoincrement()) @db.UnsignedMediumInt
-  general_product_id Int      @db.UnsignedTinyInt
-  size_id            Int      @db.UnsignedTinyInt
-  name               String   @db.VarChar(60)
-  description        String?  @db.TinyText
-  image              String   @db.VarChar(45)
-  price              Int      @db.UnsignedInt
-  stock              Int      @default(0) @db.UnsignedMediumInt
-  date_created       DateTime @default(now()) @db.Timestamp(0)
+  id                 Int            @id @default(autoincrement()) @db.UnsignedMediumInt
+  general_product_id Int            @db.UnsignedTinyInt
+  size_id            Int            @db.UnsignedTinyInt
+  name               String         @db.VarChar(60)
+  specific_shop_id   Int            @db.UnsignedMediumInt
+  description        String?        @db.TinyText
+  image              String         @db.VarChar(45)
+  price              Int            @db.UnsignedInt
+  stock              Int            @default(0) @db.UnsignedMediumInt
+  date_created       DateTime       @default(now()) @db.Timestamp(0)
+  specific_shops     specific_shops @relation(fields: [specific_shop_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "specific_products_ibfk_1")
 
   @@index([general_product_id], map: "general_product_id")
   @@index([size_id], map: "size")
+  @@index([specific_shop_id], map: "specific_shop_id")
 }
 
 model transactions {
@@ -174,6 +157,70 @@ model wish_lists {
   @@index([user_session_id], map: "user_session_id")
 }
 
+model general_shops {
+  id          Int     @id @default(autoincrement()) @db.UnsignedTinyInt
+  category    String  @unique(map: "type") @db.VarChar(40)
+  description String? @db.TinyText
+  image       String  @db.VarChar(45)
+}
+
+model location {
+  id       Int    @id @default(autoincrement()) @db.UnsignedTinyInt
+  location String @unique(map: "location") @db.VarChar(40)
+}
+
+model my_shops {
+  id              Int                 @id @default(autoincrement()) @db.UnsignedInt
+  user_session_id String              @db.Char(32)
+  shop_type       my_shops_shop_type?
+  shop_id         Int                 @db.UnsignedMediumInt
+  date_created    DateTime            @default(now()) @db.Timestamp(0)
+  date_modified   DateTime            @default(dbgenerated("'1990-01-01 00:00:01'")) @db.Timestamp(0)
+
+  @@index([shop_type, shop_id], map: "shop_type")
+  @@index([user_session_id], map: "user_session_id")
+}
+
+model online_shop_categories {
+  id          Int    @id @default(autoincrement()) @db.UnsignedTinyInt
+  category    String @unique(map: "category") @db.VarChar(40)
+  description String @db.TinyText
+  image       String @db.VarChar(45)
+}
+
+model online_shops_shops {
+  id                       Int                       @id @default(autoincrement()) @db.UnsignedMediumInt
+  online_shops_category_id Int                       @db.UnsignedTinyInt
+  name                     String                    @unique(map: "name") @db.VarChar(60)
+  description              String?                   @db.TinyText
+  image                    String                    @db.VarChar(45)
+  owner                    Int                       @db.UnsignedInt
+  areas_served             String?                   @db.TinyText
+  date_created             DateTime                  @default(now()) @db.Timestamp(0)
+  customers                customers                 @relation(fields: [owner], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "online_shops_shops_ibfk_1")
+  novel_products_products  novel_products_products[]
+
+  @@index([online_shops_category_id], map: "online_shops_category_id")
+  @@index([owner], map: "owner")
+}
+
+model specific_shops {
+  id                Int                 @id @default(autoincrement()) @db.UnsignedMediumInt
+  general_shop_id   Int                 @db.UnsignedTinyInt
+  location_id       Int                 @db.UnsignedTinyInt
+  name              String              @db.VarChar(60)
+  description       String?             @db.TinyText
+  image             String              @db.VarChar(45)
+  owner             Int                 @db.UnsignedInt
+  date_created      DateTime            @default(now()) @db.Timestamp(0)
+  customers         customers           @relation(fields: [owner], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "specific_shops_ibfk_1")
+  specific_products specific_products[]
+
+  @@index([general_shop_id], map: "general_shop_id")
+  @@index([location_id], map: "location")
+  @@index([owner], map: "owner")
+}
+
 enum carts_product_type {
   common
   unique
@@ -184,17 +231,23 @@ enum order_contents_product_type {
   unique
 }
 
-enum reviews_product_type {
-  common
-  unique
-}
-
 enum sales_product_type {
   common
   unique
 }
 
 enum wish_lists_product_type {
+  common
+  unique
+}
+
+enum customers_user_type {
+  buyer
+  seller
+  admin
+}
+
+enum my_shops_shop_type {
   common
   unique
 }
