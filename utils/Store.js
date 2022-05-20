@@ -10,42 +10,50 @@ const initialState = {
       : [],
   },
   userInfo: Cookies.get('userInfo')
-    ? JSON.parse(Cookies.get('userInfo'))
-    : null,
+    ? JSON.parse(Cookies.get('userInfo')) : null,
 };
 
+
 function reducer(state, action) {
-    switch (action.type) {
+  switch (action.type) {
     //   case 'DARK_MODE_ON':
     //     return { ...state, darkMode: true };
     //   case 'DARK_MODE_OFF':
     //     return { ...state, darkMode: false };
-      case 'CART_ADD_ITEM': {
-        const newItem = action.payload;
-        
-        const existItem = state.cart.cartItems.find(
-          (item) => item[0].f2 === newItem[0].f2
-        );
-        const cartItems = existItem
-          ? state.cart.cartItems.map((item) =>
-              item[0].f5 === existItem[0].f5 ? newItem : item
-            )
-          : [...state.cart.cartItems, newItem];
-        Cookies.set('cartItems', JSON.stringify(cartItems));
-        return { ...state, cart: { ...state.cart, cartItems } };
-      }
+    case 'CART_ADD_ITEM': {
+      const newItem = action.payload;
 
-      case 'USER_LOGIN':
+      const existItem = state.cart.cartItems.find(
+        (item) => item[0].f2 === newItem[0].f2
+      );
+      const cartItems = existItem
+        ? state.cart.cartItems.map((item) =>
+          item[0].f5 === existItem[0].f5 ? newItem : item
+        )
+        : [...state.cart.cartItems, newItem];
+      Cookies.set('cartItems', JSON.stringify(cartItems));
+      return { ...state, cart: { ...state.cart, cartItems } };
+    }
+
+    case 'CART_REMOVE_ITEM': {
+      const cartItems = state.cart.cartItems.filter(
+        (item) => item._id !== action.payload._id
+      );
+      Cookies.set('cartItems', JSON.stringify(cartItems));
+      return { ...state, cart: { ...state.cart, cartItems } };
+    }
+
+    case 'USER_LOGIN':
       return { ...state, userInfo: action.payload };
     case 'USER_LOGOUT':
       return { ...state, userInfo: null, cart: { cartItems: [] } };
 
-      default:
-        return state;
-    }
+    default:
+      return state;
   }
-  export function StoreProvider(props) {
-    const [state, dispatch] = useReducer(reducer, initialState);
-    const value = { state, dispatch };
-    return <Store.Provider value={value}>{props.children}</Store.Provider>;
-  }
+}
+export function StoreProvider(props) {
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const value = { state, dispatch };
+  return <Store.Provider value={value}>{props.children}</Store.Provider>;
+}

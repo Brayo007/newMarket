@@ -14,7 +14,7 @@ model carts {
   product_id      Int                @db.UnsignedMediumInt
   quantity        Int                @db.UnsignedTinyInt
   date_created    DateTime           @default(now()) @db.Timestamp(0)
-  date_modified   DateTime           @default(dbgenerated("'1990-01-01 00:00:01'")) @db.Timestamp(0)
+  date_modified   DateTime           @default(dbgenerated("('1990-01-01 00:00:01')")) @db.Timestamp(0)
 
   @@index([product_type, product_id], map: "product_type")
   @@index([user_session_id], map: "user_session_id")
@@ -63,7 +63,7 @@ model novel_products_products {
   price                      Int                @db.UnsignedInt
   stock                      Int                @default(0) @db.UnsignedMediumInt
   date_created               DateTime           @default(now()) @db.Timestamp(0)
-  online_shops_shops         online_shops_shops @relation(fields: [online_shop_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "novel_products_products_ibfk_1")
+  online_shops_shops         online_shops_shops @relation(fields: [online_shop_id], references: [id], onUpdate: Restrict, map: "novel_products_products_ibfk_1")
 
   @@index([novel_products_category_id], map: "novel_products_category_id")
   @@index([online_shop_id], map: "online_shop_id")
@@ -123,7 +123,7 @@ model specific_products {
   price              Int            @db.UnsignedInt
   stock              Int            @default(0) @db.UnsignedMediumInt
   date_created       DateTime       @default(now()) @db.Timestamp(0)
-  specific_shops     specific_shops @relation(fields: [specific_shop_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "specific_products_ibfk_1")
+  specific_shops     specific_shops @relation(fields: [specific_shop_id], references: [id], onUpdate: Restrict, map: "specific_products_ibfk_1")
 
   @@index([general_product_id], map: "general_product_id")
   @@index([size_id], map: "size")
@@ -151,7 +151,7 @@ model wish_lists {
   product_id      Int                      @db.UnsignedMediumInt
   quantity        Int                      @db.UnsignedTinyInt
   date_created    DateTime                 @default(now()) @db.Timestamp(0)
-  date_modified   DateTime                 @default(dbgenerated("'1990-01-01 00:00:01'")) @db.Timestamp(0)
+  date_modified   DateTime                 @default(dbgenerated("('1990-01-01 00:00:01')")) @db.Timestamp(0)
 
   @@index([product_type, product_id], map: "product_type")
   @@index([user_session_id], map: "user_session_id")
@@ -175,7 +175,7 @@ model my_shops {
   shop_type       my_shops_shop_type?
   shop_id         Int                 @db.UnsignedMediumInt
   date_created    DateTime            @default(now()) @db.Timestamp(0)
-  date_modified   DateTime            @default(dbgenerated("'1990-01-01 00:00:01'")) @db.Timestamp(0)
+  date_modified   DateTime            @default(dbgenerated("('1990-01-01 00:00:01')")) @db.Timestamp(0)
 
   @@index([shop_type, shop_id], map: "shop_type")
   @@index([user_session_id], map: "user_session_id")
@@ -197,7 +197,7 @@ model online_shops_shops {
   owner                    Int                       @db.UnsignedInt
   areas_served             String?                   @db.TinyText
   date_created             DateTime                  @default(now()) @db.Timestamp(0)
-  customers                customers                 @relation(fields: [owner], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "online_shops_shops_ibfk_1")
+  customers                customers                 @relation(fields: [owner], references: [id], onUpdate: Restrict, map: "online_shops_shops_ibfk_1")
   novel_products_products  novel_products_products[]
 
   @@index([online_shops_category_id], map: "online_shops_category_id")
@@ -213,7 +213,7 @@ model specific_shops {
   image             String              @db.VarChar(45)
   owner             Int                 @db.UnsignedInt
   date_created      DateTime            @default(now()) @db.Timestamp(0)
-  customers         customers           @relation(fields: [owner], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "specific_shops_ibfk_1")
+  customers         customers           @relation(fields: [owner], references: [id], onUpdate: Restrict, map: "specific_shops_ibfk_1")
   specific_products specific_products[]
 
   @@index([general_shop_id], map: "general_shop_id")
