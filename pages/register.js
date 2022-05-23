@@ -48,7 +48,7 @@ export default function Register() {
         password,
       });
       dispatch({ type: 'USER_LOGIN', payload: data });
-      Cookies.set('userInfo', data);
+      Cookies.set('userInfo', JSON.stringify(data));
       router.push(redirect || '/');
     } catch (err) {
       enqueueSnackbar(
@@ -66,7 +66,7 @@ export default function Register() {
             <div className="form-group mb-6">
 
               <Controller
-                name="name"
+                name="first_name"
                 control={control}
                 defaultValue=""
                 rules={{
